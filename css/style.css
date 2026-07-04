@@ -81,6 +81,14 @@ body {
   display: none;
 }
 
+.teacher-only-btn {
+  display: none;
+}
+
+.teacher-only-card {
+  display: none;
+}
+
 .logo-section {
   display: flex;
   align-items: center;
@@ -1027,12 +1035,25 @@ body {
     left: 0;
     top: 0;
     height: 100vh;
-    width: 280px;
+    width: 240px;
     z-index: 100;
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+    padding: 16px;
   }
   .sidebar.open {
     transform: translateX(0);
+  }
+  .sidebar .nav-item {
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    gap: 8px;
+  }
+  .sidebar .logo-section {
+    margin-bottom: 20px;
+    padding: 4px;
+  }
+  .sidebar .logo-section h2 {
+    font-size: 1rem;
   }
 
   /* Main Content adjustment */
@@ -1127,7 +1148,7 @@ body {
     display: none !important;
   }
   
-  #report-center-section {
+  #reports-section {
     display: block !important;
   }
   

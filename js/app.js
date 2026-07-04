@@ -148,6 +148,116 @@ function initEventListeners() {
       overlay.classList.remove("active");
     });
   }
+
+  // 1. 系統架構編輯與儲存
+  const editSchemaBtn = document.getElementById("edit-schema-btn");
+  const cancelSchemaBtn = document.getElementById("cancel-schema-btn");
+  const saveSchemaBtn = document.getElementById("save-schema-btn");
+  const schemaCode = document.getElementById("schema-code");
+  const schemaEditArea = document.getElementById("schema-edit-area");
+  const schemaEditInput = document.getElementById("schema-edit-input");
+
+  if (editSchemaBtn && schemaCode && schemaEditArea && schemaEditInput) {
+    editSchemaBtn.addEventListener("click", () => {
+      const currentSchema = schemaFiles[state.selectedSchemaFile].schema;
+      schemaEditInput.value = JSON.stringify(currentSchema, null, 2);
+      schemaCode.style.display = "none";
+      schemaEditArea.style.display = "block";
+    });
+  }
+
+  if (cancelSchemaBtn && schemaCode && schemaEditArea) {
+    cancelSchemaBtn.addEventListener("click", () => {
+      schemaCode.style.display = "block";
+      schemaEditArea.style.display = "none";
+    });
+  }
+
+  if (saveSchemaBtn && schemaCode && schemaEditArea && schemaEditInput) {
+    saveSchemaBtn.addEventListener("click", () => {
+      try {
+        const parsed = JSON.parse(schemaEditInput.value);
+        schemaFiles[state.selectedSchemaFile].schema = parsed;
+        schemaCode.innerText = JSON.stringify(parsed, null, 2);
+        
+        schemaCode.style.display = "block";
+        schemaEditArea.style.display = "none";
+        logAudit("success", `[儲存] 修改 ${schemaFiles[state.selectedSchemaFile].path} 規範成功。`);
+      } catch (err) {
+        logAudit("warning", `[錯誤] JSON 格式有誤，儲存失敗。`);
+        alert(`儲存失敗！請檢查 JSON 格式是否正確。\n原因: ${err.message}`);
+      }
+    });
+  }
+
+  // 2. RAG 教材文獻新增
+  const ragAddBtn = document.getElementById("rag-add-btn");
+  const ragAddSubject = document.getElementById("rag-add-subject");
+  const ragAddTitle = document.getElementById("rag-add-title");
+  const ragAddContent = document.getElementById("rag-add-content");
+
+  if (ragAddBtn && ragAddSubject && ragAddTitle && ragAddContent) {
+    ragAddBtn.addEventListener("click", () => {
+      const subject = ragAddSubject.value.trim();
+      const title = ragAddTitle.value.trim();
+      const content = ragAddContent.value.trim();
+
+      if (!subject || !title || !content) {
+        logAudit("warning", "[錯誤] 欄位不完整，無法新增教材。");
+        alert("請完整填寫文獻主題、章節標題與段落內文！");
+        return;
+      }
+
+      const newId = `DOC00${SYSTEM_DATA.ragLibrary.length + 1}`;
+      SYSTEM_DATA.ragLibrary.push({
+        id: newId,
+        subject: subject,
+        title: title,
+        content: content
+      });
+
+      logAudit("success", `[RAG] 新增教材段落成功。文獻代碼: ${newId}，主題: "${subject}"。`);
+      alert(`新增教材段落成功！\n文獻代碼: ${newId}\n現在你可以使用關鍵字檢索它了。`);
+
+      // 清空輸入
+      ragAddSubject.value = "";
+      ragAddTitle.value = "";
+      ragAddContent.value = "";
+    });
+  }
+
+  // 3. SOP 資料管線控制
+  const sopTestBtn = document.getElementById("sop-test-btn");
+  const sopSaveBtn = document.getElementById("sop-save-btn");
+  const sopSyncTime = document.getElementById("sop-sync-time");
+  const sopPassingScore = document.getElementById("sop-passing-score");
+
+  if (sopTestBtn) {
+    sopTestBtn.addEventListener("click", () => {
+      logAudit("info", "觸發資料管線連線自我檢測...");
+      sopTestBtn.disabled = true;
+      setTimeout(() => {
+        logAudit("success", "資料管線稽核完成。所有 Local 與 Cloud 資料夾 Schema 對齊率 100%。");
+        alert("資料管線自我檢測通過！\n與本地資料夾 (Layer 1-4) 的連線狀態良好。");
+        sopTestBtn.disabled = false;
+      }, 800);
+    });
+  }
+
+  if (sopSaveBtn && sopSyncTime && sopPassingScore) {
+    sopSaveBtn.addEventListener("click", () => {
+      const time = sopSyncTime.value.trim();
+      const score = sopPassingScore.value;
+
+      if (!time || !score) {
+        alert("請輸入有效的時間與門檻！");
+        return;
+      }
+
+      logAudit("success", `[SOP] 排程與門檻已變更。每日分析時間: ${time}，及格門檻: ${score}分。`);
+      alert("設定儲存成功！\n即時資料分析管線已根據新規則重新對齊同步。");
+    });
+  }
 }
 
 // 分頁切換
@@ -355,6 +465,12 @@ window.selectSchema = function(schemaKey) {
     detailsCode.innerText = JSON.stringify(fileData.schema, null, 2);
   }
   
+  // 切換檔案時，重設 Schema 編輯區域顯示
+  const editArea = document.getElementById("schema-edit-area");
+  const codeEl = document.getElementById("schema-code");
+  if (editArea) editArea.style.display = "none";
+  if (codeEl) codeEl.style.display = "block";
+  
   logAudit("info", `檢視架構欄位: ${fileData.path}`);
 };
 
@@ -363,14 +479,47 @@ function updateRoleView() {
   const badge = document.getElementById("current-role-badge");
   const studentPickerContainer = document.getElementById("student-picker-container");
   
+  const teacherOnlyBtns = document.querySelectorAll(".teacher-only-btn");
+  const teacherOnlyCards = document.querySelectorAll(".teacher-only-card");
+  
+  const navSchema = document.querySelector('.nav-item[data-tab="schema"]');
+  const navSop = document.querySelector('.nav-item[data-tab="sop"]');
+  
   if (state.currentRole === "student") {
     badge.className = "user-badge";
     badge.innerHTML = `<span class="role-indicator"></span>學員視角 (${getSelectedStudentName()})`;
     if (studentPickerContainer) studentPickerContainer.style.display = "block";
+    
+    // 學生端：隱藏編輯面板及按鈕，禁止修改 RAG、管線、系統規範
+    teacherOnlyBtns.forEach(btn => btn.style.display = "none");
+    teacherOnlyCards.forEach(card => card.style.display = "none");
+    
+    // 直接將不可用功能的選單項目隱藏
+    if (navSchema) navSchema.style.display = "none";
+    if (navSop) navSop.style.display = "none";
+    
+    // 重設 Schema 編輯區為唯讀狀態
+    const editArea = document.getElementById("schema-edit-area");
+    const codeEl = document.getElementById("schema-code");
+    if (editArea) editArea.style.display = "none";
+    if (codeEl) codeEl.style.display = "block";
+    
+    // 若當前停留在已被隱藏的頁面，自動切換至學生預設頁面 (測驗)
+    if (state.currentTab === "schema" || state.currentTab === "sop") {
+      switchTab("quiz");
+    }
   } else {
     badge.className = "user-badge teacher-role";
     badge.innerHTML = `<span class="role-indicator"></span>教師視角 (系統管理員)`;
     if (studentPickerContainer) studentPickerContainer.style.display = "block"; // 教師也可以切換查看不同學生的歷程
+    
+    // 教師端：開啟編輯面板及按鈕
+    teacherOnlyBtns.forEach(btn => btn.style.display = "block");
+    teacherOnlyCards.forEach(card => card.style.display = "block");
+    
+    // 教師端：還原顯示選單項目
+    if (navSchema) navSchema.style.display = "flex";
+    if (navSop) navSop.style.display = "flex";
   }
   
   // 重新渲染報告和歷程

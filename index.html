@@ -83,9 +83,18 @@
             <div id="schema-tree" style="margin-top: 12px;"></div>
           </div>
           <div class="schema-details">
-            <strong id="schema-title"
-              style="font-size: 0.9rem; color: var(--accent-cyan); display: block; margin-bottom: 8px;">載入中...</strong>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+              <strong id="schema-title" style="font-size: 0.9rem; color: var(--accent-cyan);">載入中...</strong>
+              <button class="btn btn-secondary teacher-only-btn" id="edit-schema-btn" style="padding: 6px 12px; font-size: 0.75rem;">✏️ 編輯結構規範</button>
+            </div>
             <pre id="schema-code">讀取 Schema 內容中...</pre>
+            <div id="schema-edit-area" style="display: none; margin-top: 12px;">
+              <textarea id="schema-edit-input" class="qualitative-textarea" style="height: 180px; font-family: monospace; font-size: 0.8rem; margin-top: 4px;"></textarea>
+              <div style="text-align: right; margin-top: 8px; display: flex; gap: 8px; justify-content: flex-end;">
+                <button class="btn btn-secondary" id="cancel-schema-btn" style="padding: 6px 12px; font-size: 0.75rem;">取消</button>
+                <button class="btn" id="save-schema-btn" style="padding: 6px 12px; font-size: 0.75rem;">💾 儲存修改</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -131,6 +140,34 @@
                 無生成結果</div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- 教師專用：編輯/新增教材文獻庫 -->
+      <div class="card teacher-only-card" id="rag-management-card" style="border-color: rgba(139, 92, 246, 0.3); background: rgba(139, 92, 246, 0.02); margin-top: 24px;">
+        <div class="card-title" style="color: var(--accent-purple); font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          <span>⚙️ 教材文獻庫管理</span>
+          <span class="badge" style="background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); border-color: rgba(139, 92, 246, 0.3); font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; border: 1px solid;">教師專用</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
+          您可以在此為 RAG 系統新增或修改權威教材段落，擴充 AI 的檢索知識邊界。
+        </p>
+        <div class="grid-2" style="margin-bottom: 12px;">
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">文獻主題</label>
+            <input type="text" id="rag-add-subject" class="search-input" placeholder="例如: 高爾夫動作力學" style="padding: 10px 12px; font-size: 0.85rem;">
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">章節標題</label>
+            <input type="text" id="rag-add-title" class="search-input" placeholder="例如: 重心轉移與下肢啟動" style="padding: 10px 12px; font-size: 0.85rem;">
+          </div>
+        </div>
+        <div style="margin-bottom: 16px;">
+          <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">段落內文 (RAG Chunk Content)</label>
+          <textarea id="rag-add-content" class="qualitative-textarea" style="height: 80px; margin-top: 4px;" placeholder="請輸入詳細教材內容..."></textarea>
+        </div>
+        <div style="text-align: right;">
+          <button class="btn" id="rag-add-btn" style="background: var(--accent-purple); font-size: 0.85rem; padding: 10px 20px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);">➕ 新增教材段落</button>
         </div>
       </div>
     </section>
@@ -235,6 +272,31 @@
             <div class="pty-step-title">改進補強閉環</div>
             <div class="pty-step-desc">週五客製補強，下週一進行二次複評以達標。</div>
           </div>
+        </div>
+      </div>
+
+      <!-- 教師專用：編輯資料管線 SOP -->
+      <div class="card teacher-only-card" id="sop-management-card" style="border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.02); margin-top: 24px;">
+        <div class="card-title" style="color: var(--accent-amber); font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          <span>⚙️ 資料管線與排程設定</span>
+          <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); border-color: rgba(245, 158, 11, 0.3); font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; border: 1px solid;">教師專用</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
+          您可以調整當日資料同步排程與 PTY 流程閾值，或進行管線重新整理。
+        </p>
+        <div class="grid-2" style="margin-bottom: 16px;">
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">每日自動分析同步時間</label>
+            <input type="text" id="sop-sync-time" class="search-input" value="17:00" style="padding: 10px 12px; font-size: 0.85rem;">
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">及格分數門檻設定</label>
+            <input type="number" id="sop-passing-score" class="search-input" value="70" style="padding: 10px 12px; font-size: 0.85rem;">
+          </div>
+        </div>
+        <div style="text-align: right; display: flex; gap: 8px; justify-content: flex-end;">
+          <button class="btn btn-secondary" id="sop-test-btn" style="font-size: 0.85rem; padding: 10px 20px;">測試管線連線</button>
+          <button class="btn" id="sop-save-btn" style="background: var(--accent-amber); font-size: 0.85rem; padding: 10px 20px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);">💾 儲存設定並同步</button>
         </div>
       </div>
     </section>
