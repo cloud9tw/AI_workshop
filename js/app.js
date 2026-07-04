@@ -51,6 +51,16 @@ function initEventListeners() {
     item.addEventListener("click", (e) => {
       const tabId = e.currentTarget.getAttribute("data-tab");
       switchTab(tabId);
+      
+      // 行動版點選選單項目後，自動關閉側邊欄
+      const sidebar = document.querySelector(".sidebar");
+      const overlay = document.getElementById("sidebar-overlay");
+      if (sidebar && sidebar.classList.contains("open")) {
+        sidebar.classList.remove("open");
+      }
+      if (overlay && overlay.classList.contains("active")) {
+        overlay.classList.remove("active");
+      }
     });
   });
 
@@ -109,6 +119,33 @@ function initEventListeners() {
     printBtn.addEventListener("click", () => {
       logAudit("info", "觸發 PDF 報表生成與列印對話框。");
       window.print();
+    });
+  }
+
+  // 行動版側邊欄開關控制
+  const menuBtn = document.getElementById("mobile-menu-btn");
+  const closeBtn = document.getElementById("sidebar-close");
+  const overlay = document.getElementById("sidebar-overlay");
+  const sidebar = document.querySelector(".sidebar");
+
+  if (menuBtn && sidebar && overlay) {
+    menuBtn.addEventListener("click", () => {
+      sidebar.classList.add("open");
+      overlay.classList.add("active");
+    });
+  }
+
+  if (closeBtn && sidebar && overlay) {
+    closeBtn.addEventListener("click", () => {
+      sidebar.classList.remove("open");
+      overlay.classList.remove("active");
+    });
+  }
+
+  if (overlay && sidebar) {
+    overlay.addEventListener("click", () => {
+      sidebar.classList.remove("open");
+      overlay.classList.remove("active");
     });
   }
 }
@@ -748,7 +785,7 @@ function drawSVGCharts(student) {
   const studentY = Math.round(180 - (150 * Math.exp(studentExponent)));
   
   chartWrapper.innerHTML = `
-    <svg width="100%" height="220" style="background: transparent;">
+    <svg width="100%" height="auto" viewBox="0 0 680 220" style="background: transparent;">
       <!-- 網格線 -->
       <line x1="40" y1="180" x2="640" y2="180" stroke="var(--border-color)" stroke-width="2" />
       <line x1="40" y1="30" x2="40" y2="180" stroke="var(--border-color)" stroke-width="1" />

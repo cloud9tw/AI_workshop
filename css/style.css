@@ -70,7 +70,15 @@ body {
   left: 0;
   top: 0;
   z-index: 100;
-  transition: background-color var(--transition-normal), border-color var(--transition-normal);
+  transition: background-color var(--transition-normal), border-color var(--transition-normal), transform var(--transition-normal);
+}
+
+.sidebar-close-btn {
+  display: none;
+}
+
+.mobile-menu-btn {
+  display: none;
 }
 
 .logo-section {
@@ -951,6 +959,150 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+/* Mobile Responsiveness Styles */
+@media (max-width: 768px) {
+  /* Mobile Menu Button */
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-size: 1.5rem;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+  .mobile-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-cyan);
+  }
+
+  /* Sidebar Close Button */
+  .sidebar-close-btn {
+    display: block;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color var(--transition-fast);
+    z-index: 101;
+  }
+  .sidebar-close-btn:hover {
+    color: var(--accent-rose);
+  }
+
+  /* Sidebar Overlay Backdrop */
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(10, 14, 23, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-normal);
+    z-index: 99;
+  }
+  .sidebar-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Sidebar position */
+  .sidebar {
+    transform: translateX(-100%);
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 280px;
+    z-index: 100;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Main Content adjustment */
+  .main-content {
+    margin-left: 0;
+    max-width: 100%;
+    padding: 20px;
+  }
+
+  /* Header Bar Adjustment */
+  .header-bar {
+    gap: 12px;
+  }
+  .header-bar h1 {
+    font-size: 1.35rem;
+    flex-grow: 1;
+  }
+  .user-badge {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+
+  /* Schema Viewer Grid Layout */
+  .schema-viewer {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    min-height: auto;
+  }
+  .schema-viewer > div:first-child {
+    border-right: none !important;
+    border-bottom: 1px solid var(--border-color);
+    padding-right: 0 !important;
+    padding-bottom: 16px;
+  }
+
+  /* Student profile summary grid layout */
+  .student-profile-summary {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .stat-box {
+    padding: 12px;
+  }
+  .stat-value {
+    font-size: 1.25rem;
+  }
+
+  /* Search Box Container */
+  .search-box-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .search-box-container button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Report template printing and margins */
+  .report-template {
+    padding: 20px;
+  }
+  .report-meta-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  /* Audit console height */
+  .audit-console {
+    height: 150px;
+  }
 }
 
 /* Print CSS Styles */
