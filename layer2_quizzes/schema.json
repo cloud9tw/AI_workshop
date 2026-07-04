@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Layer 2: Quiz & Response Schema (第二層：測驗與答題欄位標準)",
+  "description": "定義測驗題庫（含質性與量化）及學生答題紀錄的資料格式標準。",
+  "type": "object",
+  "properties": {
+    "quiz_id": {
+      "type": "string",
+      "description": "測驗唯一識別碼"
+    },
+    "quiz_title": {
+      "type": "string",
+      "description": "測驗標題"
+    },
+    "subject_id": {
+      "type": "string",
+      "description": "對應學科識別碼"
+    },
+    "questions": {
+      "type": "array",
+      "description": "測驗題目清單",
+      "items": {
+        "type": "object",
+        "required": ["question_id", "type", "content", "score_weight"],
+        "properties": {
+          "question_id": {
+            "type": "string",
+            "description": "題目識別碼"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["quantitative", "qualitative"],
+            "description": "題型分類：quantitative(量化單選/評分)、qualitative(質性簡答/描述)"
+          },
+          "content": {
+            "type": "string",
+            "description": "題目內文"
+          },
+          "options": {
+            "type": "array",
+            "description": "量化題目的選項 (若為質性題則為空)",
+            "items": { "type": "string" }
+          },
+          "correct_option_index": {
+            "type": "integer",
+            "description": "正確選項索引值 (從 0 開始，量化題適用)"
+          },
+          "model_answer_keywords": {
+            "type": "array",
+            "description": "質性題對應的標準關鍵字或核心觀念",
+            "items": { "type": "string" }
+          },
+          "score_weight": {
+            "type": "number",
+            "description": "此題佔分權重"
+          },
+          "mapped_nodes": {
+            "type": "array",
+            "description": "關聯之學科知識節點 ID",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  },
+  "required": ["quiz_id", "quiz_title", "subject_id", "questions"]
+}

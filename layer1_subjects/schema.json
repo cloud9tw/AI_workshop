@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Layer 1: Subject Content Schema (第一層：學科內容欄位標準)",
+  "description": "定義高爾夫動作要點與骨科解剖學等學科的核心知識節點與教學大綱規範。",
+  "type": "object",
+  "properties": {
+    "subject_id": {
+      "type": "string",
+      "description": "學科唯一識別碼 (例如: GOLF_01, ANATOMY_01)"
+    },
+    "subject_name": {
+      "type": "string",
+      "description": "學科名稱 (例如: 高爾夫運動力學, 骨科解剖學)"
+    },
+    "version": {
+      "type": "string",
+      "description": "教材版本號 (例如: v1.0.0)"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date",
+      "description": "最後更新日期 (YYYY-MM-DD)"
+    },
+    "knowledge_nodes": {
+      "type": "array",
+      "description": "核心知識節點清單",
+      "items": {
+        "type": "object",
+        "required": ["node_id", "node_name", "description", "category"],
+        "properties": {
+          "node_id": {
+            "type": "string",
+            "description": "知識點識別碼"
+          },
+          "node_name": {
+            "type": "string",
+            "description": "知識點名稱"
+          },
+          "category": {
+            "type": "string",
+            "description": "知識類別 (例如: 揮桿力學, 骨骼結構, 肌肉止點)"
+          },
+          "description": {
+            "type": "string",
+            "description": "詳細知識說明"
+          },
+          "reference_sources": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "權威教材來源或文獻頁碼"
+          }
+        }
+      }
+    }
+  },
+  "required": ["subject_id", "subject_name", "version", "last_updated", "knowledge_nodes"]
+}

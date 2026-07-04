@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Layer 3: Learning History & Profile Schema (第三層：學習歷程與百分比分群標準)",
+  "description": "定義學生學習歷程追蹤、百分比落點分析以及同儕分群的格式標準。",
+  "type": "object",
+  "properties": {
+    "student_id": {
+      "type": "string",
+      "description": "學員學號/識別碼"
+    },
+    "student_name": {
+      "type": "string",
+      "description": "學員姓名"
+    },
+    "learning_records": {
+      "type": "array",
+      "description": "歷次測驗學習紀錄",
+      "items": {
+        "type": "object",
+        "required": ["quiz_id", "score", "taken_at"],
+        "properties": {
+          "quiz_id": {
+            "type": "string",
+            "description": "已完成的測驗識別碼"
+          },
+          "score": {
+            "type": "number",
+            "description": "取得的實得分數"
+          },
+          "taken_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "作答時間"
+          },
+          "wrong_questions": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "答錯的題目 ID 列表"
+          }
+        }
+      }
+    },
+    "evaluation_metrics": {
+      "type": "object",
+      "required": ["percentile", "learning_phase", "peer_group_id"],
+      "properties": {
+        "percentile": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "學員在全體參照群體中的百分比落點 (PR值，例如: 85)"
+        },
+        "learning_phase": {
+          "type": "string",
+          "enum": ["新手階段", "基礎成長", "核心勝任", "專家引領"],
+          "description": "根據評估模型判定之學習階段"
+        },
+        "peer_group_id": {
+          "type": "string",
+          "description": "同儕分群分類 ID (例如: 'GOLF_STRUGGLING' 力學待加強組, 'ANATOMY_EXCELLENT' 解剖優異組)"
+        },
+        "diagnostic_summary": {
+          "type": "string",
+          "description": "AI 生成的綜合性強弱項診斷結論"
+        }
+      }
+    }
+  },
+  "required": ["student_id", "student_name", "learning_records", "evaluation_metrics"]
+}

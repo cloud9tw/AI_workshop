@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MVP 評量與教學系統</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <!-- 側邊巡覽列 -->
+  <aside class="sidebar">
+    <div class="logo-section">
+      <img
+        src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f2fe'><path d='M12 2L2 22h20L12 2zm0 3.99L19.53 19H4.47L12 5.99zM13 16h-2v2h2v-2zm0-6h-2v4h2v-4z'/></svg>"
+        alt="Logo">
+      <div>
+        <h2>評量系統</h2>
+        <span class="badge">MVP v1.0</span>
+      </div>
+    </div>
+
+    <ul class="nav-links">
+      <li class="nav-item active" data-tab="schema">📁 系統架構與規範</li>
+      <li class="nav-item" data-tab="quiz">✍️ 動作與解剖測驗</li>
+      <li class="nav-item" data-tab="rag">🔍 RAG 教材知識庫</li>
+      <li class="nav-item" data-tab="history">📊 歷程落點與診斷</li>
+      <li class="nav-item" data-tab="reports">📄 報告輸出與下載</li>
+      <li class="nav-item" data-tab="sop">📅 資料管線與 SOP</li>
+      <li class="nav-item" data-tab="privacy">🔒 品質控管與隱私</li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <!-- 8. 免登入 DEMO 示範環境設定 -->
+      <div class="demo-selector">
+        <label for="global-role-select">👤 示範角色切換</label>
+        <select id="global-role-select">
+          <option value="student">學生 (林小明 - 待加強)</option>
+          <option value="teacher">教師 (班級督導員)</option>
+        </select>
+      </div>
+
+      <div class="demo-selector" id="student-picker-container">
+        <label for="student-picker">🎓 選擇學員資料</label>
+        <select id="student-picker">
+          <option value="ST001">林小明 (PR 45 - 重心與隘口弱)</option>
+          <option value="ST002">張雅婷 (PR 95 - 動作解剖優異)</option>
+          <option value="ST003">陳志豪 (PR 18 - 基礎概念欠缺)</option>
+        </select>
+      </div>
+
+      <button class="theme-toggle-btn" id="theme-toggle">☀️ 切換淺色模式</button>
+    </div>
+  </aside>
+
+  <!-- 主要內容區 -->
+  <main class="main-content">
+    <header class="header-bar">
+      <h1 id="page-title"> MVP 臨床教學評量系統</h1>
+      <div class="user-badge" id="current-role-badge">
+        <span class="role-indicator"></span>學員視角
+      </div>
+    </header>
+
+    <!-- 1. 系統架構與規範 (Layer 1-4) -->
+    <section id="schema-section" class="view-section active">
+      <div class="card">
+        <div class="card-title">📂 系統分層與資料夾結構標準 (Layer 1 - Layer 4)</div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 20px;">
+          本系統明確定義 4 層級的資料夾結構與 JSON Schema 規格標準，保障數據一致性、追蹤性與隱私規範。點擊下方樹狀圖可檢視對應層級的實體 Schema 檔案規範。
+        </p>
+
+        <div class="schema-viewer">
+          <div style="border-right: 1px solid var(--border-color); padding-right: 16px;">
+            <strong style="font-size: 0.85rem; color: var(--text-muted);">📁 專案實體資料夾目錄</strong>
+            <div id="schema-tree" style="margin-top: 12px;"></div>
+          </div>
+          <div class="schema-details">
+            <strong id="schema-title"
+              style="font-size: 0.9rem; color: var(--accent-cyan); display: block; margin-bottom: 8px;">載入中...</strong>
+            <pre id="schema-code">讀取 Schema 內容中...</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 測驗題庫 (Layer 2) -->
+    <section id="quiz-section" class="view-section">
+      <div id="quiz-container"></div>
+    </section>
+
+    <!-- 3. RAG 知識庫 (Layer 3) -->
+    <section id="rag-section" class="view-section">
+      <div class="card">
+        <div class="card-title">🔍 RAG 權威教材知識庫檢索範圍</div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px;">
+          系統串接PGA動力力學及國考解剖重點教材。AI 答案嚴格限制在檢索文獻邊界內生成，拒絕回答教材外的問題以完全避免 AI 幻覺。
+        </p>
+
+        <div class="rag-alert-banner">
+          <span>💡</span>
+          <span><strong>提示詞防線已啟動：</strong>僅允許根據檢索結果回答，超出範圍將顯示拒絕回答。可測試輸入「重心」、「肩袖肌群」、「尺神經麻」、「蘋果」等進行對比。</span>
+        </div>
+
+        <div class="search-box-container">
+          <input type="text" class="search-input" id="rag-search-input" placeholder="輸入關鍵字檢索權威教材 (例如: 重心, 肌肉, 斜角肌)...">
+          <button class="btn" id="rag-search-btn">🔍 檢索生成</button>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <strong style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 12px;">📄
+              檢索到的文獻來源 (RAG Context Chunks)</strong>
+            <div id="rag-results-container" class="rag-sources">
+              <div style="text-align: center; color: var(--text-muted); padding: 20px;">等待輸入檢索詞...</div>
+            </div>
+          </div>
+          <div>
+            <strong style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 12px;">🤖 整合生成結果
+              (Boundary-Anchored AI Generation)</strong>
+            <div id="rag-answer-container" style="min-height: 100px;">
+              <div
+                style="text-align: center; color: var(--text-muted); padding: 20px; border: 1px dashed var(--border-color); border-radius: 12px;">
+                無生成結果</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 歷程落點與診斷 (Layer 3) -->
+    <section id="history-section" class="view-section">
+      <div class="student-profile-summary">
+        <div class="stat-box">
+          <div class="stat-label">當前學員姓名</div>
+          <div class="stat-value" id="student-name-val">林小明</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">最新測驗分數</div>
+          <div class="stat-value glow-emerald" id="student-avg-score">65分</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">百分比落點 (PR)</div>
+          <div class="stat-value glow-cyan" id="student-pr">PR 45</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">學習階段 / 同儕分群</div>
+          <div class="stat-value glow-purple" id="student-phase"
+            style="font-size: 1rem; font-weight: 700; margin-top: 8px;">基礎成長</div>
+          <div id="student-group" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">動力鏈傳導不良組</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">📈 參照分佈與百分比落點圖</div>
+          <div id="history-chart-wrapper" class="svg-chart-container"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🤖 AI 個別弱點診斷與對策</div>
+          <div id="diagnostic-tags-container" style="margin-bottom: 16px;"></div>
+          <div style="border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 12px;">
+            <strong>弱點診斷詳細說明：</strong>
+            <p id="ai-diagnostic-text"
+              style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-top: 6px;"></p>
+          </div>
+          <div style="margin-top: 12px;">
+            <strong>建議改善對策：</strong>
+            <p id="ai-action-text"
+              style="font-size: 0.85rem; color: var(--accent-cyan); line-height: 1.5; margin-top: 6px;"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. 報告輸出與下載 (Layer 4) -->
+    <section id="reports-section" class="view-section">
+      <div class="card">
+        <div class="card-title"
+          style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+          <span>📄 臨床報告輸出中心</span>
+          <button class="btn" id="print-pdf-btn">🖨️ 另存成 PDF 報告</button>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px;">
+          報告會根據當前切換的<strong>「示範角色」</strong>動態載入版型。學生版報告聚焦於「個人弱點」與「自主強化資源」；教師版報告則聚焦於「班級同儕分佈總覽」與「教學微調建議」。
+        </p>
+
+        <div id="report-preview-container"></div>
+      </div>
+    </section>
+
+    <!-- 7. 資料管線與 SOP / 9. 考核機制 (PTY 流程) -->
+    <section id="sop-section" class="view-section">
+      <div class="card">
+        <div class="card-title">📅 當日收集、當日分析、當日會議（即時資料管線與會議 SOP）</div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 20px;">
+          自 2026-07-03 起實施的資料與決策同步標準作業流程（SOP）。確保每天產生的實習考核能在當天完成分析並產生教學調整決策。
+        </p>
+
+        <div id="sop-timeline-container" class="timeline"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🎯 考核機制與改進閉環 (PTY 流程參考)</div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5;">
+          系統參考臨床 PTY 考核流程，實施「雙向學前評估」、「多元量化評量」、「質性 AI 回饋與信賴檢核」及「週五補強與二次複評」的完整改進閉環。
+        </p>
+
+        <div class="pty-steps-container">
+          <div class="pty-step-card">
+            <div class="pty-step-num">Step 1</div>
+            <div class="pty-step-title">學前雙向評估</div>
+            <div class="pty-step-desc">學前筆試評估起點能力，客製微調實習重點。</div>
+          </div>
+          <div class="pty-step-card">
+            <div class="pty-step-num">Step 2</div>
+            <div class="pty-step-title">多元量化考核</div>
+            <div class="pty-step-desc">筆試(10%) + 術科操作(20%) + 平時成績(40%)，達70分及格。</div>
+          </div>
+          <div class="pty-step-card">
+            <div class="pty-step-num">Step 3</div>
+            <div class="pty-step-title">AI 信賴回饋</div>
+            <div class="pty-step-desc">分析質性回答並評估信賴星級，低於3星或不及格者觸發輔導。</div>
+          </div>
+          <div class="pty-step-card">
+            <div class="pty-step-num">Step 4</div>
+            <div class="pty-step-title">改進補強閉環</div>
+            <div class="pty-step-desc">週五客製補強，下週一進行二次複評以達標。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. AI 回饋彙整流程 / 10. 資料品質與隱私控管 -->
+    <section id="privacy-section" class="view-section">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">✍️ AI 評語精簡工具 (<= 50字限制與信賴度評定)</div>
+              <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; margin-bottom: 12px;">
+                在後端分析管線中，系統會將發散的臨床評語，透過內置 Prompt 濃縮在 50 字內，並評估作答的信賴星等。可在下方輸入發散語句進行測試。
+              </p>
+              <textarea class="qualitative-textarea" id="feedback-input-text"
+                style="height: 100px; margin-top: 0; margin-bottom: 12px;"
+                placeholder="例如: 該名學生在揮桿練習時手腕轉動時機明顯太快了，導致下桿打地，而且他解剖學部分雖然記得大結節的止點，但是斜角肌的範圍完全搞不清楚..."></textarea>
+              <button class="btn" id="compress-btn">🪄 壓縮並評定信賴度</button>
+
+              <div class="ai-summary-tag">
+                <strong>壓縮後的 50 字精簡評語：</strong>
+                <p id="compress-result-text" style="font-weight: 600; color: var(--accent-purple);">-</p>
+                <div
+                  style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">
+                  <span>字數統計: <span id="compress-char-count">0</span> / 50 字</span>
+                  <span id="compress-stars">-</span>
+                </div>
+              </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🛡️ 資料來源版本與隱私控管</div>
+            <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; margin-bottom: 12px;">
+              所有上傳至雲端的作答資訊皆實施<strong>「去識別化去隱私化」</strong>處理。教材來源進行严格的版本控管。
+            </p>
+            <table
+              style="width: 100%; border-collapse: collapse; font-size: 0.75rem; text-align: left; margin-bottom: 16px;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border-color); color: var(--accent-cyan);">
+                  <th style="padding: 6px;">權威資料來源</th>
+                  <th style="padding: 6px;">版本號</th>
+                  <th style="padding: 6px;">狀態</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                  <td style="padding: 6px;">雙和醫院放射實習計劃書</td>
+                  <td style="padding: 6px;">v13.2026.03</td>
+                  <td style="padding: 6px; color: var(--accent-emerald);">使用中</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                  <td style="padding: 6px;">PGA 動作力學標準</td>
+                  <td style="padding: 6px;">v3.1.2025</td>
+                  <td style="padding: 6px; color: var(--accent-emerald);">使用中</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                  <td style="padding: 6px;">醫事放射師國考解剖重點</td>
+                  <td style="padding: 6px;">v2026.01</td>
+                  <td style="padding: 6px; color: var(--accent-emerald);">使用中</td>
+                </tr>
+              </tbody>
+            </table>
+            <strong
+              style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 6px;">品質控管規則:</strong>
+            <ul style="font-size: 0.75rem; color: var(--text-muted); padding-left: 16px; line-height: 1.4;">
+              <li>學員資料去識別化：姓名對照表僅保存在本地端，雲端僅傳輸隨機生成的學員代碼。</li>
+              <li>AI 生成複審機制：信賴度低於 3 星之報告，自動標記為待複審以供教師覆檢。</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 實時稽核日誌主控台 -->
+        <div class="card">
+          <div class="card-title">🖥️ 系統運作與稽核日誌主控台 (Live Audit Console)</div>
+          <div class="audit-console" id="audit-console">
+            <div class="audit-line info">等待日誌載入...</div>
+          </div>
+        </div>
+    </section>
+  </main>
+
+  <!-- 引用資料庫與應用程式邏輯 -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Layer 4: Report Output Schema (第四層：報告輸出與 AI 稽核標準)",
+  "description": "定義學生版及教師版報告內容標準，以及 AI 反饋精簡結果與信賴度標註欄位。",
+  "type": "object",
+  "properties": {
+    "report_id": {
+      "type": "string",
+      "description": "報告檔案唯一識別碼"
+    },
+    "report_type": {
+      "type": "string",
+      "enum": ["student", "teacher"],
+      "description": "報告類型：student (學生個人診斷與強化建議)、teacher (教師班級總覽與教學調整建議)"
+    },
+    "student_id": {
+      "type": "string",
+      "description": "學生識別碼 (若為教師版報告，則此欄位為空或為關聯班級ID)"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "報告產出日期時間"
+    },
+    "report_body": {
+      "type": "object",
+      "description": "報告主體內容，依報告類型呈現不同視圖",
+      "properties": {
+        "weakness_analysis": { "type": "string", "description": "學員個別弱點診斷詳細說明 (學生版專用)" },
+        "actionable_recommendations": { "type": "string", "description": "具體強化與改進建議 (學生版專用)" },
+        "class_performance_summary": { "type": "string", "description": "班級整體測驗表現總結 (教師版專用)" },
+        "teaching_strategies": { "type": "string", "description": "教學調整與輔導對策建議 (教師版專用)" }
+      }
+    },
+    "ai_feedback_summary": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "AI 整合後的回饋摘要，嚴格限制在 50 字以內，精確傳達核心弱點與主要對策。"
+    },
+    "trust_rating": {
+      "type": "object",
+      "required": ["level", "reasoning"],
+      "properties": {
+        "level": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "AI 報告信賴等級 (1-5 星)。評分依據包含數據完整度、質性答題長度與前後一致性。"
+        },
+        "reasoning": {
+          "type": "string",
+          "description": "信賴等級判定原因說明 (例如: 作答字數充沛且作答資料點大於5個)"
+        }
+      }
+    },
+    "audit_metadata": {
+      "type": "object",
+      "properties": {
+        "data_source_version": { "type": "string", "description": "採用的原始學科教材與題庫版本" },
+        "pipeline_run_id": { "type": "string", "description": "對應之即時資料分析管線執行序號" },
+        "reviewer_status": {
+          "type": "string",
+          "enum": ["待審核", "已審定", "需人工重置"],
+          "description": "AI 生成報告的人工複審狀態"
+        }
+      }
+    }
+  },
+  "required": ["report_id", "report_type", "generated_at", "report_body", "ai_feedback_summary", "trust_rating"]
+}
