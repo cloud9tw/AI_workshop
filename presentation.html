@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>07-03 講座簡報 - 分層教學評量系統與AI應用</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* 簡報專用覆蓋與增強樣式 */
+    body.presentation-mode {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background-color: #05080e;
+      font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+    }
+
+    /* 頂部巡覽列 */
+    .presentation-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 40px;
+      background: rgba(18, 24, 38, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      z-index: 100;
+    }
+
+    .presentation-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .presentation-logo img {
+      width: 32px;
+      height: 32px;
+    }
+
+    .presentation-logo h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      background: var(--primary-glow);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .presentation-logo h1::after {
+      content: "07-03 講座簡報";
+      font-size: 0.65rem;
+      background: rgba(139, 92, 246, 0.2);
+      color: var(--accent-purple);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .presentation-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .kbd-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-family: monospace;
+    }
+
+    /* 投影片容器 */
+    .slide-container {
+      flex-grow: 1;
+      position: relative;
+      width: 100%;
+      height: calc(100vh - 75px - 60px); /* 扣除 Header 和 Footer */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      perspective: 1200px;
+    }
+
+    /* 單張投影片 */
+    .slide {
+      position: absolute;
+      width: 85%;
+      max-width: 1100px;
+      height: 82%;
+      max-height: 640px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 40px 48px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.95) translateZ(-100px);
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1;
+      overflow-y: auto;
+    }
+
+    /* 簡報模式滾動條優化 */
+    .slide::-webkit-scrollbar {
+      width: 6px;
+    }
+    .slide::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1) translateZ(0px);
+      z-index: 10;
+    }
+
+    .slide.previous {
+      transform: scale(0.9) translateX(-100%) rotateY(15deg);
+      opacity: 0;
+      z-index: 5;
+    }
+
+    .slide.next {
+      transform: scale(0.9) translateX(100%) rotateY(-15deg);
+      opacity: 0;
+      z-index: 5;
+    }
+
+    /* 投影片版面配置 */
+    .slide-content-layout {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
+    }
+
+    .slide-title-area {
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding-bottom: 12px;
+    }
+
+    .slide-tag {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--accent-cyan);
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: inline-block;
+    }
+
+    .slide-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 0;
+    }
+
+    .slide-body {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Cover Slide */
+    .slide-cover {
+      text-align: center;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at center, rgba(139, 92, 246, 0.15) 0%, rgba(10, 14, 23, 0) 70%), var(--bg-card);
+    }
+
+    .slide-cover .logo-large {
+      width: 70px;
+      height: 70px;
+      margin-bottom: 20px;
+      filter: drop-shadow(0 0 20px rgba(0, 242, 254, 0.4));
+    }
+
+    .slide-cover h2 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 30%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+
+    .slide-cover p {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 800px;
+      margin: 0 auto 24px;
+      line-height: 1.6;
+    }
+
+    .slide-cover .meta-info {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: flex;
+      gap: 20px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+    }
+
+    /* List styling */
+    .slide-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .slide-list-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.4s ease;
+    }
+
+    .slide.active .slide-list-item {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Loading delays */
+    .slide.active .slide-list-item:nth-child(1) { transition-delay: 0.1s; }
+    .slide.active .slide-list-item:nth-child(2) { transition-delay: 0.2s; }
+    .slide.active .slide-list-item:nth-child(3) { transition-delay: 0.3s; }
+    .slide.active .slide-list-item:nth-child(4) { transition-delay: 0.4s; }
+
+    .list-icon {
+      background: rgba(0, 242, 254, 0.1);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(0, 242, 254, 0.2);
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-weight: bold;
+      font-size: 0.75rem;
+    }
+
+    .list-content strong {
+      color: var(--text-main);
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 2px;
+    }
+
+    .list-content span {
+      color: var(--text-muted);
+    }
+
+    /* 4-Layer Architecture Visual */
+    .layer-flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .layer-box {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition-normal);
+    }
+
+    .layer-box:hover, .layer-box.active {
+      transform: translateY(-6px);
+      background: rgba(0, 242, 254, 0.03);
+      border-color: var(--accent-cyan);
+      box-shadow: 0 8px 24px rgba(0, 242, 254, 0.1);
+    }
+
+    .layer-box .num {
+      font-size: 0.75rem;
+      background: rgba(255,255,255,0.08);
+      border-radius: 6px;
+      padding: 2px 6px;
+      display: inline-block;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+    }
+
+    .layer-box.active .num {
+      background: var(--primary-glow);
+      color: white;
+    }
+
+    .layer-box h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+
+    .layer-box p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    .layer-details-box {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 16px;
+      min-height: 100px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    /* RAG Simulator Slide */
+    .rag-simulator {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .rag-sim-search {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .rag-sim-btn {
+      background: rgba(0, 242, 254, 0.15);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      color: var(--accent-cyan);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .rag-sim-btn:hover {
+      background: var(--primary-glow);
+      color: white;
+    }
+
+    .rag-sim-flow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .sim-block {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 0.75rem;
+      height: 110px;
+      overflow-y: auto;
+    }
+
+    /* Bottom Navigation / Progress Bar */
+    .presentation-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 40px;
+      background: rgba(10, 14, 23, 0.9);
+      border-top: 1px solid rgba(255,255,255,0.05);
+      z-index: 100;
+    }
+
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--transition-fast);
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--accent-cyan);
+    }
+
+    .progress-bar-container {
+      flex-grow: 1;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      margin: 0 40px;
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--primary-glow);
+      width: 0%;
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    .slide-number {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      min-width: 45px;
+      text-align: right;
+    }
+
+    /* 2 Columns grid */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    /* Task list grid */
+    .task-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .task-item-card {
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.8rem;
+    }
+
+    .task-checkbox {
+      width: 14px;
+      height: 14px;
+      border: 1px solid var(--accent-purple);
+      border-radius: 3px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .task-desc {
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+  </style>
+</head>
+<body class="presentation-mode">
+
+  <!-- 頂部巡覽列 -->
+  <header class="presentation-header">
+    <div class="presentation-logo">
+      <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f2fe'><path d='M12 2L2 22h20L12 2zm0 3.99L19.53 19H4.47L12 5.99zM13 16h-2v2h2v-2zm0-6h-2v4h2v-4z'/></svg>" alt="Logo">
+      <h1>07-03 講座：分層教學評量系統與AI應用</h1>
+    </div>
+    <div class="presentation-controls">
+      <span class="kbd-hint">使用 ← / → 鍵切換</span>
+      <button class="nav-btn" id="autoplay-btn">▶ 自動播放</button>
+      <a href="index.html" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem; box-shadow: none;">🚪 返回主控台</a>
+    </div>
+  </header>
+
+  <!-- 投影片容器 -->
+  <div class="slide-container" id="slide-container">
+
+    <!-- Slide 1: Cover -->
+    <div class="slide slide-cover active" data-index="1">
+      <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f2fe'><path d='M12 2L2 22h20L12 2zm0 3.99L19.53 19H4.47L12 5.99zM13 16h-2v2h2v-2zm0-6h-2v4h2v-4z'/></svg>" alt="Logo" class="logo-large">
+      <h2>分層教學評量系統與 AI 應用</h2>
+      <p>結合分層結構、RAG 知識防線與即時分析管線的教學評量閉環解決方案</p>
+      
+      <div class="meta-info">
+        <span>📅 日期時間：2026-07-03 18:22:27</span>
+        <span>📍 地點：[插入地點]</span>
+        <span>👤 講師：[插入姓名]</span>
+      </div>
+    </div>
+
+    <!-- Slide 2: Abstract -->
+    <div class="slide" data-index="2">
+      <div class="slide-content-layout">
+        <div class="slide-title-area">
+          <span class="slide-tag">Lecture Abstract</span>
+          <h3 class="slide-title">講座摘要與核心目標</h3>
+        </div>
+        <div class="slide-body">
+          <p style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 20px; line-height: 1.6;">
+            本專案建立一套以<strong>分層結構</strong>為核心的教學與評量系統，結合測驗診斷、學習歷程匯出、個別弱點辨識與 AI 輔助回饋，以支援高爾夫動作要點與骨科解剖學考照等學科。
+          </p>
+          <div class="grid-2">
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px;">
+              <strong style="color: var(--accent-cyan); display: block; margin-bottom: 8px; font-size: 1.05rem;">🎯 核心待解決痛點</strong>
+              <ul style="list-style: none; padding-left: 0; font-size: 0.85rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 8px;">
+                <li>• 評量數據孤島：缺乏統一 Schema 標準規格。</li>
+                <li>• AI 評語幻覺：生成內容超出臨床教材大綱。</li>
+                <li>• 評議決策滯後：評估回饋時長高達兩個月。</li>
+              </ul>
+            </div>
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px;">
+              <strong style="color: var(--accent-purple); display: block; margin-bottom: 8px; font-size: 1.05rem;">🚀 專案實作解決方案</strong>
+              <ul style="list-style: none; padding-left: 0; font-size: 0.85rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 8px;">
+                <li>• <strong>RAG 邊界錨定</strong>：完全消除 AI 臨床知識幻覺。</li>
+                <li>• <strong>即時分析管線</strong>：實現當日收集、當日分析、當日會議。</li>
+                <li>• <strong>50字與信賴星等</strong>：精簡質性回饋並加註 AI 可信度。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 3: 4-Layer Standard -->
+    <div class="slide" data-index="3">
+      <div class="slide-content-layout">
+        <div class="slide-title-area">
+          <span class="slide-tag">1. System Architecture</span>
+          <h3 class="slide-title">系統分層與結構設計 (Layer 1 - 4)</h3>
+        </div>
+        <div class="slide-body">
+          <div class="layer-flow">
+            <div class="layer-box active" onclick="showLayerDetails(1)">
+              <span class="num">Layer 1</span>
+              <h4>Subjects</h4>
+              <p>學科與知識節點</p>
+            </div>
+            <div class="layer-box" onclick="showLayerDetails(2)">
+              <span class="num">Layer 2</span>
+              <h4>Quizzes</h4>
+              <p>題庫與作答紀錄</p>
+            </div>
+            <div class="layer-box" onclick="showLayerDetails(3)">
+              <span class="num">Layer 3</span>
+              <h4>History</h4>
+              <p>學習歷程與分群</p>
+            </div>
+            <div class="layer-box" onclick="showLayerDetails(4)">
+              <span class="num">Layer 4</span>
+              <h4>Reports</h4>
+              <p>報告輸出與報告書</p>
+            </div>
+          </div>
+          <div class="layer-details-box" id="layer-details-txt">
+            <strong>[第一層：學科核心內容與知識節點]</strong><br>
+            存放各學科核心大綱內容。定義知識節點定義，例如高爾夫球動作定義、姿勢型別；骨科解剖學考照重點（肩袖肌群、ACL、斜角肌等）。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 4: AI & Risk Control -->
+    <div class="slide" data-index="4">
+      <div class="slide-content-layout">
+        <div class="slide-title-area">
+          <span class="slide-tag">2. AI & Risk Control</span>
+          <h3 class="slide-title">AI 應用與風險控管機制</h3>
+        </div>
+        <div class="slide-body">
+          <div class="grid-2">
+            <div>
+              <ul class="slide-list">
+                <li class="slide-list-item">
+                  <div class="list-icon">1</div>
+                  <div class="list-content">
+                    <strong>RAG 邊界限制</strong>
+                    <span>限制 AI 只在教材資料庫內檢索，拒絕回答教材外的問題以杜絕 AI 幻覺。</span>
+                  </div>
+                </li>
+                <li class="slide-list-item">
+                  <div class="list-icon">2</div>
+                  <div class="list-content">
+                    <strong>回饋統整為 50 字內摘要</strong>
+                    <span>自動將冗長發散的臨床評語，以 LLM 濃縮至 50 字以內，方便快速瀏覽決策。</span>
+                  </div>
+                </li>
+                <li class="slide-list-item">
+                  <div class="list-icon">3</div>
+                  <div class="list-content">
+                    <strong>AI 報告加註信賴等級</strong>
+                    <span>自動標註 1-5 星，針對信賴度低（低於3星）或不及格之報告標示為「待審核」。</span>
+                  </div>
+                </li>
+                <li class="slide-list-item">
+                  <div class="list-icon">4</div>
+                  <div class="list-content">
+                    <strong>個別化強化建議</strong>
+                    <span>精準對症下藥，例如提示「需強化下肢骨頭解剖位置」，維持內容可靠度。</span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <div class="rag-simulator">
+                <strong style="font-size: 0.8rem; color: var(--accent-cyan); display: block; margin-bottom: 8px;"> RAG 邊界防線模擬展示</strong>
+                <div class="rag-sim-search">
+                  <input type="text" class="search-input" id="sim-query" value="斜角肌間隙" style="padding: 6px 12px; font-size: 0.75rem;">
+                  <button class="rag-sim-btn" onclick="runSim()">🔍 測試</button>
+                </div>
+                <div class="rag-sim-flow">
+                  <div class="sim-block">
+                    <strong style="color: var(--text-muted); font-size: 0.7rem; display: block; margin-bottom: 4px;">Context (文獻庫邊界):</strong>
+                    <div id="sim-context" style="color: var(--text-muted); font-size: 0.7rem; line-height: 1.3;">
+                      斜角肌間隙由前、中斜角肌與第一肋骨包圍，臂神經叢與鎖骨下動脈從中穿過。緊繃會壓迫尺神經支配區造成手麻。
+                    </div>
+                  </div>
+                  <div class="sim-block">
+                    <strong style="color: var(--accent-emerald); font-size: 0.7rem; display: block; margin-bottom: 4px;">AI 整合生成 (限50字與評級):</strong>
+                    <div id="sim-answer" style="color: var(--text-main); font-size: 0.7rem; line-height: 1.3; font-weight: 500;">
+                      前中斜角肌與第一肋骨隘口壓迫臂神經叢下幹，易致小指側麻木。建議強化斜角肌伸展。(星級：⭐⭐⭐⭐⭐)
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 5: Pipeline & SOP -->
+    <div class="slide" data-index="5">
+      <div class="slide-content-layout">
+        <div class="slide-title-area">
+          <span class="slide-tag">3. Optimization & SOP</span>
+          <h3 class="slide-title">教學評量流程優化與時效</h3>
+        </div>
+        <div class="slide-body">
+          <div class="grid-2">
+            <div style="background: rgba(244,63,94,0.05); border: 1px solid rgba(244,63,94,0.2); border-radius: 16px; padding: 24px;">
+              <h4 style="color: var(--accent-rose); font-size: 1.15rem; margin-bottom: 12px; font-weight: 700;">傳統評量流程痛點</h4>
+              <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px;">
+                在引進此系統之前，臨床小組面臨嚴重的時間滯後：
+              </p>
+              <ul style="list-style: none; padding-left: 0; font-size: 0.8rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 8px;">
+                <li>🔴 <strong>繁重評閱</strong>：教師需手動統計並分析大量量化與質性評量數據。</li>
+                <li>🔴 <strong>回饋延遲</strong>：學員接受評估後，資料整理與分析耗時。</li>
+                <li>🔴 <strong>時差過長</strong>：往往需延宕至 <strong>兩個月後</strong> 召開評議會議才給予回饋，教學即時性嚴重受損。</li>
+              </ul>
+            </div>
+            <div style="background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2); border-radius: 16px; padding: 24px;">
+              <h4 style="color: var(--accent-emerald); font-size: 1.15rem; margin-bottom: 12px; font-weight: 700;">即時管線與決策 SOP (07-03 起實施)</h4>
+              <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px;">
+                建立<strong>當日收集、當日分析、當日會議</strong>之即時資料管線：
+              </p>
+              <ul style="list-style: none; padding-left: 0; font-size: 0.8rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 8px;">
+                <li>🟢 <strong>資料即時分析</strong>：當日收集到作答資料，後端管線於下午即時運算分析。</li>
+                <li>🟢 <strong>快速招開會議</strong>：下班前快速召開對齊會，指出學生當週弱點。</li>
+                <li>🟢 <strong>資訊同步透明</strong>：分析與報告結果同時對老師及學生可見，同步修正學習與教學策略。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 6: Scenarios -->
+    <div class="slide" data-index="6">
+      <div class="slide-content-layout">
+        <div class="slide-title-area">
+          <span class="slide-tag">4. Scenarios</span>
+          <h3 class="slide-title">學科場景與應用示例</h3>
+        </div>
+        <div class="slide-body">
+          <div class="grid-2">
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px;">
+              <h4 style="color: var(--accent-cyan); font-size: 1.1rem; margin-bottom: 8px; font-weight: 700;">🏌️ 高爾夫球教學場景</h4>
+              <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 12px;">
+                針對高爾夫動作要點進行數位化與力學評估：
+              </p>
+              <ul style="list-style: none; padding-left: 0; font-size: 0.8rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 8px;">
+                <li>• <strong>核心定義</strong>：定義下桿動力鏈、手腕釋放時機、姿勢型別。</li>
+                <li>• <strong>測驗診斷</strong>：診斷學員常見動作問題（如肩膀搶跑的過頂切擊）。</li>
+                <li>• <strong>改進建議</strong>：自動引導學員進行分段重啟動作矯正，並生成可印製報告。</li>
+              </ul>
+            </div>
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px;">
+              <h4 style="color: var(--accent-purple); font-size: 1.1rem; margin-bottom: 8px; font-weight: 700;">🦴 骨科解剖學考照場景</h4>
+              <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 12px;">
+                針對考照核心解剖大綱與臨床物理檢查進行評量：
+              </p>
+              <ul style="list-style: none; padding-left: 0; font-size: 0.8rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 8px;">
+                <li>• <strong>考照痛點</strong>：解決題型長度或解剖立體結構概念不清（如斜角肌三角）導致的卡關。</li>
+                <li>• <strong>解法流程</strong>：第二層測驗診斷 $\rightarrow$ 第三層分群與百分比落點定位 $\rightarrow$ 第四層輸出個別弱點與強化（如脛股前拉試驗位移向度）。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 7: User & Access -->
+    <div class="slide" data-index="7">
+      <div class="slide-content-layout">
+        <div class="slide-title-area">
+          <span class="slide-tag">5 & 6. Users & Feedback</span>
+          <h3 class="slide-title">使用者存取、自主學習與回饋機制</h3>
+        </div>
+        <div class="slide-body">
+          <div class="grid-2">
+            <div>
+              <strong style="color: var(--accent-cyan); font-size: 0.95rem; display: block; margin-bottom: 8px;">👥 使用者與存取設計</strong>
+              <ul style="list-style: none; padding-left: 0; font-size: 0.8rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 8px;">
+                <li>• <strong>對象與身份</strong>：以學生為主體，亦包含老師端檢視與決策。特別支援內部實習課程連動之學生。</li>
+                <li>• <strong>免登入示範環境</strong>：現階段 Demo 示範不需要學生個別帳號即可觀看樣例，方便先行評估。</li>
+                <li>• <strong>擴充流程</strong>：先行觀看示範以確認功能與資料流，後續再行擴充帳號權限。</li>
+              </ul>
+            </div>
+            <div>
+              <strong style="color: var(--accent-purple); font-size: 0.95rem; display: block; margin-bottom: 8px;">🔄 自主學習與教學回饋</strong>
+              <ul style="list-style: none; padding-left: 0; font-size: 0.8rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 8px;">
+                <li>• <strong>學生自主學習</strong>：透過學習歷程、弱點診斷、PDF 報告匯出，強化學員的自我監測與規劃能力。</li>
+                <li>• <strong>教師教學調整</strong>：教師收到彙整後之 AI 報告，可迅速掌握班級/個別學員弱點，動態調整下次教學。</li>
+                <li>• <strong>考核機制落地</strong>：類比 PTY、PTY One 等考核機制流程，將通過條件與評量標準系統化落地。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 8: Tasks -->
+    <div class="slide" data-index="8">
+      <div class="slide-content-layout">
+        <div class="slide-title-area">
+          <span class="slide-tag">Action Items & Tasks</span>
+          <h3 class="slide-title">會議決策與待辦作業清單</h3>
+        </div>
+        <div class="slide-body">
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
+            為使分層教學評量系統落地實作，講座中制定了以下 10 項具體開發任務：
+          </p>
+          <div class="task-grid">
+            <div class="task-item-card">
+              <span class="task-checkbox"></span>
+              <span class="task-desc">1. 明確定義系統分層與資料夾結構：列出 L1 ~ L4 檔案與欄位標準。</span>
+            </div>
+            <div class="task-item-card">
+              <span class="task-checkbox"></span>
+              <span class="task-desc">2. 設計並實作第二層測驗題庫：量化與質性題型（覆蓋高爾夫/解剖）。</span>
+            </div>
+            <div class="task-item-card">
+              <span class="task-checkbox"></span>
+              <span class="task-desc">3. 建立 RAG 知識庫與檢索範圍：整理教材，設定防線避免 AI 幻覺。</span>
+            </div>
+            <div class="task-item-card">
+              <span class="task-checkbox"></span>
+              <span class="task-desc">4. 開發歷程匯出與診斷模組：支援同儕分群與百分比落點呈現。</span>
+            </div>
+            <div class="task-item-card">
+              <span class="task-checkbox"></span>
+              <span class="task-desc">5. 實作 PDF 報告匯出：提供學生個人版與教師班級版雙版型。</span>
+            </div>
+            <div class="task-item-card">
+              <span class="task-checkbox"></span>
+              <span class="task-desc">6. 建立 AI 回饋彙整：Prompt 評語精簡限制50字內，標記信賴星等。</span>
+            </div>
+            <div class="task-item-card">
+              <span class="task-checkbox"></span>
+              <span class="task-desc">7. 規劃即時管線與會議 SOP：建立當日收集/分析/會議決策對齊機制。</span>
+            </div>
+            <div class="task-item-card">
+              <span class="task-checkbox"></span>
+              <span class="task-desc">8. 準備示範環境：提供無需登入的 DEMO 範例給師生檢視流程。</span>
+            </div>
+            <div class="task-item-card">
+              <span class="task-checkbox"></span>
+              <span class="task-desc">9. 設計考核機制：參考臨床 PTY 流程，明確通過條件與改進閉環。</span>
+            </div>
+            <div class="task-item-card">
+              <span class="task-checkbox"></span>
+              <span class="task-desc">10. 制定隱私品質控管：去識別化敏感資料，確保資料版本追蹤。</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 底部導覽與進度條 -->
+  <footer class="presentation-footer">
+    <button class="nav-btn" onclick="prevSlide()">◀ 上一張</button>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" id="progress-bar-fill"></div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <span class="slide-number" id="slide-num-txt">1 / 8</span>
+      <button class="nav-btn" onclick="nextSlide()">下一張 ▶</button>
+    </div>
+  </footer>
+
+  <script>
+    // 簡報狀態管理
+    let currentSlideIndex = 1;
+    const totalSlides = 8;
+    let autoplayTimer = null;
+    let isAutoplayActive = false;
+
+    const slides = document.querySelectorAll('.slide');
+    const progressBarFill = document.getElementById('progress-bar-fill');
+    const slideNumTxt = document.getElementById('slide-num-txt');
+    const autoplayBtn = document.getElementById('autoplay-btn');
+
+    // 鍵盤導覽支援
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'Space' || e.key === 'PageDown') {
+        nextSlide();
+        stopAutoplay();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        prevSlide();
+        stopAutoplay();
+      }
+    });
+
+    function updateSlides() {
+      slides.forEach(slide => {
+        const slideIndex = parseInt(slide.getAttribute('data-index'));
+        slide.classList.remove('active', 'previous', 'next');
+        
+        if (slideIndex === currentSlideIndex) {
+          slide.classList.add('active');
+        } else if (slideIndex < currentSlideIndex) {
+          slide.classList.add('previous');
+        } else {
+          slide.classList.add('next');
+        }
+      });
+
+      // 更新進度條與頁碼
+      const progressPercent = ((currentSlideIndex - 1) / (totalSlides - 1)) * 100;
+      progressBarFill.style.width = `${progressPercent}%`;
+      slideNumTxt.innerText = `${currentSlideIndex} / ${totalSlides}`;
+    }
+
+    function nextSlide() {
+      if (currentSlideIndex < totalSlides) {
+        currentSlideIndex++;
+      } else {
+        currentSlideIndex = 1; // 循環播放
+      }
+      updateSlides();
+    }
+
+    function prevSlide() {
+      if (currentSlideIndex > 1) {
+        currentSlideIndex--;
+      } else {
+        currentSlideIndex = totalSlides; // 循環播放
+      }
+      updateSlides();
+    }
+
+    // 自動播放控制
+    autoplayBtn.addEventListener('click', () => {
+      if (isAutoplayActive) {
+        stopAutoplay();
+      } else {
+        startAutoplay();
+      }
+    });
+
+    function startAutoplay() {
+      isAutoplayActive = true;
+      autoplayBtn.innerHTML = '⏸ 暫停';
+      autoplayBtn.style.borderColor = 'var(--accent-rose)';
+      autoplayBtn.style.color = 'var(--accent-rose)';
+      autoplayTimer = setInterval(() => {
+        nextSlide();
+      }, 5000); // 5 秒換一張
+    }
+
+    function stopAutoplay() {
+      if (isAutoplayActive) {
+        isAutoplayActive = false;
+        clearInterval(autoplayTimer);
+        autoplayBtn.innerHTML = '▶ 自動播放';
+        autoplayBtn.style.borderColor = 'var(--border-color)';
+        autoplayBtn.style.color = 'var(--text-main)';
+      }
+    }
+
+    // Layer Slide 互動展示切換
+    function showLayerDetails(layerNum) {
+      const boxes = document.querySelectorAll('.layer-box');
+      boxes.forEach((box, idx) => {
+        if (idx + 1 === layerNum) {
+          box.classList.add('active');
+        } else {
+          box.classList.remove('active');
+        }
+      });
+
+      const detailsTxt = document.getElementById('layer-details-txt');
+      const details = {
+        1: `<strong>[第一層：學科核心內容與知識節點]</strong><br>存放學科的大綱內容。明確定義學科知識節點標準，例如高爾夫球姿勢型別與動作定義；骨科物理治療與放射解剖學考照核心概念。`,
+        2: `<strong>[第二層：測驗作為診斷基礎]</strong><br>收集學員在各站的作答歷程，支援量化題型與質性開放簡答，作為整個資料庫後續診斷、分析與評定的底層基礎。`,
+        3: `<strong>[第三層：學習歷程與同儕百分比落點]</strong><br>動態計算學員的同儕百分比落點 (PR 值) 與 K-Means 分群判定。學員可查閱自身的學習成長歷程，教師亦能一眼看清學員的分佈位置。`,
+        4: `<strong>[第四層：輸出與報告]</strong><br>產出可印製的 PDF 診斷報告。學生版著重在弱點強化對策；教師版著重班級同儕表現與教學對齊微調，並內置 AI 50 字精簡與信賴稽核標註。`
+      };
+      detailsTxt.innerHTML = details[layerNum];
+    }
+
+    // RAG Simulator 互動模擬
+    const queries = {
+      "斜角肌間隙": {
+        context: "斜角肌間隙（Scalene Triangle）由前斜角肌、中斜角肌與第一肋骨所包圍，臂神經叢與鎖骨下動脈從中穿過。當肌肉緊繃肥大時會夾窄此孔道，壓迫臂神經叢下幹，引發第四五指（尺神經區）麻木。",
+        answer: "斜角肌間隙由前、中斜角肌與第一肋骨構成，穿行臂神經叢下幹。緊繃會壓迫該神經，致第四五指麻木。 (星級：⭐⭐⭐⭐⭐)"
+      },
+      "高爾夫": {
+        context: "高爾夫下桿動力鏈啟動順序為：骨盆率先橫移並旋轉，重心移向左足，接著帶動軀幹與手臂下擺。若肩膀搶先旋轉，將導致桿頭軌跡由外向內切擊，形成過頂（Over the Top）錯誤動作。",
+        answer: "下桿動力鏈應由下半身骨盆啟動，重心移往左足，隨後帶動軀幹。肩膀提早轉動會形成過頂切擊，導致擊球無力。 (星級：⭐⭐⭐⭐)"
+      },
+      "蘋果": {
+        context: "[無符合檢索文獻 - 觸發安全防線邊界]",
+        answer: "抱歉，無法從指定的臨床教學教材中找到與『蘋果』相關的資訊。根據安全防線規範，我不對教材範疇外的問題進行臆測與回答。"
+      }
+    };
+
+    function runSim() {
+      const inputVal = document.getElementById('sim-query').value.trim();
+      const contextDiv = document.getElementById('sim-context');
+      const answerDiv = document.getElementById('sim-answer');
+
+      let queryKey = "斜角肌間隙";
+      if (inputVal.includes("高爾夫") || inputVal.includes("動力")) {
+        queryKey = "高爾夫";
+      } else if (!inputVal.includes("斜角") && !inputVal.includes("神經")) {
+        queryKey = "蘋果";
+      }
+
+      contextDiv.innerText = "載入檢索中...";
+      answerDiv.innerText = "AI 正在生成...";
+
+      setTimeout(() => {
+        contextDiv.innerText = queries[queryKey].context;
+        answerDiv.innerText = queries[queryKey].answer;
+      }, 500); // 500ms 快速生成
+    }
+  </script>
+</body>
+</html>
